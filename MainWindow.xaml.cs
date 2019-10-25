@@ -22,6 +22,12 @@ namespace Logistics_Transport_Issue
     public partial class MainWindow : Window
     {
         private static readonly Regex InputRegex = new Regex("[0-9]+");
+        private const string BalancedTransportText = "Balanced transport detected";
+        private const string UnbalancedTransportText = "Unbalanced transport detected - unsupported";
+
+        private int[] _supply;
+        private int[] _demand;
+        private int[,] _costs;
 
         public MainWindow()
         {
@@ -30,7 +36,16 @@ namespace Logistics_Transport_Issue
 
         private void CalculateButton_Click(object sender, RoutedEventArgs e)
         {
-            
+            _demand = new[] { 20, 40, 90 };
+            _supply = new[] { 50, 70, 30 };
+            _costs = new[,] { { 3, 5, 7 }, { 12, 10, 9 }, { 13, 3, 9 } };
+
+            var demandSum = _demand.Sum();
+            var supplySum = _supply.Sum();
+
+            transportBalanceLabel.Content = demandSum == supplySum ? BalancedTransportText : UnbalancedTransportText;
+
+            Algorithm.Calculate(_supply, _demand, _costs);
         }
 
         private void ProducersCountTextBox_TextChanged(object sender, TextChangedEventArgs e)

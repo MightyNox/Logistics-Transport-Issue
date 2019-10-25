@@ -40,11 +40,17 @@
 			<Canvas HorizontalAlignment="Stretch" Margin="5,5,5,5" VerticalAlignment="Stretch"  Background="DarkGray"/>
 		</Grid>
 
-		<Grid Grid.Row="3" Grid.Column="2" Grid.ColumnSpan="2" Grid.RowSpan="3">
-			<Button x:Name="calculateButton" Content="Calculate" Grid.Column="2" HorizontalAlignment="Stretch" Margin="50,50,50,50" Grid.Row="2" VerticalAlignment="Stretch" Click="CalculateButton_Click"/>
+        <Grid Grid.Row="1" Grid.Column="2">
+            <Label x:Name="transportBalanceLabel" Content="" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        </Grid>
+
+		<Grid Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="2" Grid.RowSpan="3">
+			<Button x:Name="calculateButton" Content="Calculate" HorizontalAlignment="Stretch" Margin="50,50,50,50" Grid.Row="2" VerticalAlignment="Stretch" Click="CalculateButton_Click"/>
 		</Grid>
 
-	</Grid>
+
+
+    </Grid>
 
 
 </Window>
