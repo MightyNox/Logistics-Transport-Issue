@@ -36,6 +36,10 @@ namespace Logistics_Transport_Issue
 
         private void CalculateButton_Click(object sender, RoutedEventArgs e)
         {
+            //_demand = new[] { 20, 40, 90 };
+            //_supply = new[] { 50, 70, 30 };
+            //_costs = new[,] { { 3, 5, 7 }, { 12, 10, 9 }, { 13, 3, 9 } };
+
             _demand = new[] { 20, 40, 90 };
             _supply = new[] { 50, 70, 30 };
             _costs = new[,] { { 3, 5, 7 }, { 12, 10, 9 }, { 13, 3, 9 } };

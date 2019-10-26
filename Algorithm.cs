@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Controls.Primitives;
 
 namespace Logistics_Transport_Issue
 {
@@ -10,13 +11,18 @@ namespace Logistics_Transport_Issue
     {
         public static void Calculate(int[] supply, int[] demand, int[,] costs)
         {
+            //TODO synchronize with minimal matrix method
             InsertFictionalSupplierOrReceiver(ref supply, ref demand);
 
-            dynamic distribution = MinimalElementMatrixMethod(supply, demand, costs);
+            var distribution = MinimalElementMatrixMethod(supply, demand, costs);
 
             Console.WriteLine();
 
-            CalculateAlphaAndBeta(distribution, costs);
+            var alphasAndBetas = CalculateAlphaAndBeta(distribution, costs);
+
+            Console.WriteLine();
+
+            CalculateDeltas(distribution, costs, alphasAndBetas[0], alphasAndBetas[1]);
         }
 
         private static void InsertFictionalSupplierOrReceiver(ref int[] supply, ref int[] demand)
@@ -26,18 +32,18 @@ namespace Logistics_Transport_Issue
 
             if (supplySum > demandSum)
             {
-                demand = demand.Concat(new[] { supplySum - demandSum }).ToArray();
+                demand = demand.Concat(new[] {supplySum - demandSum}).ToArray();
             }
             else if (supplySum < demandSum)
             {
-                supply = supply.Concat(new[] { demandSum - supplySum }).ToArray();
+                supply = supply.Concat(new[] {demandSum - supplySum}).ToArray();
             }
         }
 
-        public static int[,] MinimalElementMatrixMethod(int[] supply, int[] demand, int[,] costs)
+        private static int[,] MinimalElementMatrixMethod(IList<int> supply, IList<int> demand, int[,] costs)
         {
             dynamic distribution = new int[costs.GetLength(0), costs.GetLength(1)];
-            dynamic tmpCosts = (int[,])costs.Clone();
+            dynamic tmpCosts = (int[,]) costs.Clone();
 
             while (true)
             {
@@ -47,7 +53,7 @@ namespace Logistics_Transport_Issue
 
                 if (tmpCosts[row, column] == int.MaxValue) break;
 
-                dynamic minimumDistribution = Math.Min(demand[column], supply[row]);
+                var minimumDistribution = Math.Min(demand[column], supply[row]);
                 distribution[row, column] = minimumDistribution;
                 supply[row] -= minimumDistribution;
                 demand[column] -= minimumDistribution;
@@ -68,22 +74,23 @@ namespace Logistics_Transport_Issue
             return distribution;
         }
 
-        public static void CalculateAlphaAndBeta(int[,] distribution, int[,] costs)
+        private static int[][] CalculateAlphaAndBeta(int[,] distribution, int[,] costs)
         {
-            dynamic alphas = new int[costs.GetLength(0)];
-            dynamic betas = new int[costs.GetLength(1)];
+            var rows = distribution.GetLength(0);
+            var columns = distribution.GetLength(1);
 
+            var alphas = new int?[rows];
+            var betas = new int?[columns];
+
+            //TODO investigate edge-case - whether beta can be null
             alphas[0] = 0;
-            for (var row = 0; row < distribution.GetLength(0); row++)
+            for (var row = 0; row < rows; row++)
             {
-                for (var column = 0; column < distribution.GetLength(1); column++)
+                for (var column = 0; column < columns; column++)
                 {
-                    if (distribution[row, column] == 0)
-                    {
-                        continue;
-                    }
+                    if (distribution[row, column] == 0) continue;
 
-                    if (alphas[row] != int.MaxValue)
+                    if (alphas[row] != null)
                     {
                         betas[column] = costs[row, column] - alphas[row];
                     }
@@ -94,21 +101,74 @@ namespace Logistics_Transport_Issue
                 }
             }
 
-            for (var i = 0; i < alphas.GetLength(0); i++)
+            //TODO Save to the file
+            Console.Write(@"Alphas: ");
+            for (var i = 0; i < rows; i++)
             {
-                Console.Write(alphas[i] + "\t");
+                Console.Write(alphas[i] + @" ");
             }
 
             Console.WriteLine();
-            for (var i = 0; i < betas.GetLength(0); i++)
+
+            Console.Write(@"Betas: ");
+            for (var i = 0; i < columns; i++)
             {
-                Console.Write(betas[i] + "\t");
+                Console.Write(betas[i] + @" ");
             }
 
             Console.WriteLine();
+
+            return new[]
+            {
+                Array.ConvertAll(alphas, x => x ?? 0),
+                Array.ConvertAll(betas, x => x ?? 0)
+            };
         }
 
-        public static int[] GetIndicesOfMinimum(int[,] array)
+        private static void CalculateDeltas(int[,] distribution, int[,] costs, IReadOnlyList<int> alphas, IReadOnlyList<int> betas)
+        {
+            var rows = costs.GetLength(0);
+            var columns = costs.GetLength(1);
+            var deltas = new int[rows, columns];
+
+            for (var row = 0; row < rows; row++)
+            {
+                for (var column = 0; column < columns; column++)
+                {
+                    if (distribution[row, column] > 0)
+                    {
+                        deltas[row, column] = 0;
+                    }
+                    else
+                    {
+                        deltas[row, column] = costs[row, column] - alphas[row] - betas[column];
+                    }
+                }
+            }
+
+
+            //TODO Save to the file
+            for (var i = 0; i < rows; i++)
+            {
+                for (var j = 0; j < columns; j++)
+                {
+                    if (deltas[i, j] == 0)
+                    {
+                        Console.Write(@"x");
+                    }
+                    else
+                    {
+                        Console.Write(deltas[i, j]);
+                    }
+                    
+                    Console.Write(@" ");
+                }
+
+                Console.WriteLine();
+            }
+        }
+
+        private static int[] GetIndicesOfMinimum(int[,] array)
         {
             var minValue = double.PositiveInfinity;
             var minFirstIndex = -1;
@@ -129,7 +189,7 @@ namespace Logistics_Transport_Issue
                 }
             }
 
-            return new[] { minFirstIndex, minSecondIndex };
+            return new[] {minFirstIndex, minSecondIndex};
         }
     }
 }
