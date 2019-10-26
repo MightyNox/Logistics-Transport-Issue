@@ -9,17 +9,31 @@
 
 	<Grid ShowGridLines="True">
 		<Grid.ColumnDefinitions>
-			<ColumnDefinition Width="*" />
+            <ColumnDefinition Width="20" />
+            <ColumnDefinition Width="*" />
 			<ColumnDefinition Width="*" />
 			<ColumnDefinition Width="*" />
 		</Grid.ColumnDefinitions>
 		<Grid.RowDefinitions>
-			<RowDefinition Height="*" />
+            <RowDefinition Height="20" />
+            <RowDefinition Height="*" />
 			<RowDefinition Height="*" />
 			<RowDefinition Height="*" />
 		</Grid.RowDefinitions>
 
-		<Grid Grid.Row="0" Grid.Column="2">
+        <Grid Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="2">
+            <TextBlock Text="Receivers" VerticalAlignment="Bottom" HorizontalAlignment="Center"/>
+        </Grid>
+
+        <Grid Grid.Row="1" Grid.Column="0" Grid.RowSpan="3">
+            <TextBlock Text="Producers" VerticalAlignment="Center" HorizontalAlignment="Right">
+                <TextBlock.LayoutTransform>
+                    <RotateTransform Angle="-90" />
+                </TextBlock.LayoutTransform>
+            </TextBlock>
+        </Grid>
+
+        <Grid Grid.Row="1" Grid.Column="3">
 			<Grid.ColumnDefinitions>
 				<ColumnDefinition Width="*" />
 				<ColumnDefinition Width="*" />
@@ -29,23 +43,23 @@
 				<RowDefinition Height="*" />
 			</Grid.RowDefinitions>
  
-			<Label Grid.Row="0" Grid.Column="0" x:Name="producersCountLabel" Content="Producers count:" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-			<TextBox Grid.Row="0" Grid.Column="1" x:Name="producersCountTextBox" HorizontalAlignment="Stretch" Margin="10,0,10,0" TextWrapping="Wrap" Text="1" VerticalAlignment="Center" Height="20" TextChanged="ProducersCountTextBox_TextChanged" PreviewTextInput="ProducersCountTextBox_OnPreviewTextInput"/>
+			<Label Grid.Row="0" Grid.Column="0" x:Name="ProducersCountLabel" Content="Producers count:" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+			<TextBox Grid.Row="0" Grid.Column="1" x:Name="ProducersCountTextBox" HorizontalAlignment="Stretch" Margin="10,0,10,0" TextWrapping="Wrap" Text="1" VerticalAlignment="Center" Height="20" TextChanged="ProducersCountTextBox_TextChanged" PreviewTextInput="ProducersCountTextBox_OnPreviewTextInput"/>
 
-			<Label Grid.Row="1" Grid.Column="0" x:Name="receiversCountLabel" Content="Receivers count:" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-			<TextBox Grid.Row="1" Grid.Column="1" x:Name="receiversCountTextBox" HorizontalAlignment="Stretch" Margin="10,0,10,0" TextWrapping="Wrap" Text="1" VerticalAlignment="Center" Height="20" TextChanged="ReceiversCountTextBox_TextChanged" PreviewTextInput="ReceiversCountTextBox_OnPreviewTextInput"/>
+			<Label Grid.Row="1" Grid.Column="0" x:Name="ReceiversCountLabel" Content="Receivers count:" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+			<TextBox Grid.Row="1" Grid.Column="1" x:Name="ReceiversCountTextBox" HorizontalAlignment="Stretch" Margin="10,0,10,0" TextWrapping="Wrap" Text="1" VerticalAlignment="Center" Height="20" TextChanged="ReceiversCountTextBox_TextChanged" PreviewTextInput="ReceiversCountTextBox_OnPreviewTextInput"/>
 		</Grid>
 
-		<Grid Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Grid.RowSpan="3">
-			<Canvas HorizontalAlignment="Stretch" Margin="5,5,5,5" VerticalAlignment="Stretch"  Background="DarkGray"/>
+		<Grid Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Grid.RowSpan="3">
+            <Canvas Name="TableCanvas" HorizontalAlignment="Stretch" Margin="5,5,5,5" VerticalAlignment="Stretch" Background="DarkGray" SizeChanged="CanvasSizeChanged"/>
 		</Grid>
 
-        <Grid Grid.Row="1" Grid.Column="2">
-            <Label x:Name="transportBalanceLabel" Content="" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        <Grid Grid.Row="2" Grid.Column="3">
+            <Label x:Name="TransportBalanceLabel" Content="" HorizontalAlignment="Center" VerticalAlignment="Center"/>
         </Grid>
 
-		<Grid Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="2" Grid.RowSpan="3">
-			<Button x:Name="calculateButton" Content="Calculate" HorizontalAlignment="Stretch" Margin="50,50,50,50" Grid.Row="2" VerticalAlignment="Stretch" Click="CalculateButton_Click"/>
+		<Grid Grid.Row="3" Grid.Column="3">
+			<Button x:Name="CalculateButton" Content="Calculate" HorizontalAlignment="Stretch" Margin="50,25,50,25" VerticalAlignment="Stretch" Click="CalculateButton_Click"/>
 		</Grid>
 
 

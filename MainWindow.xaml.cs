@@ -29,6 +29,9 @@ namespace Logistics_Transport_Issue
         private int[] _demand;
         private int[,] _costs;
 
+        private int _producersCount;
+        private int _receiversCount;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -36,32 +39,46 @@ namespace Logistics_Transport_Issue
 
         private void CalculateButton_Click(object sender, RoutedEventArgs e)
         {
-            //_demand = new[] { 20, 40, 90 };
-            //_supply = new[] { 50, 70, 30 };
-            //_costs = new[,] { { 3, 5, 7 }, { 12, 10, 9 }, { 13, 3, 9 } };
-
-            _demand = new[] { 20, 40, 90 };
-            _supply = new[] { 50, 70, 30 };
-            _costs = new[,] { { 3, 5, 7 }, { 12, 10, 9 }, { 13, 3, 9 } };
+            _demand = new[] {20, 40, 90};
+            _supply = new[] {50, 70, 30};
+            _costs = new[,] {{3, 5, 7}, {12, 10, 9}, {13, 3, 9}};
 
             var demandSum = _demand.Sum();
             var supplySum = _supply.Sum();
 
-            transportBalanceLabel.Content = demandSum == supplySum ? BalancedTransportText : UnbalancedTransportText;
+            TransportBalanceLabel.Content = demandSum == supplySum ? BalancedTransportText : UnbalancedTransportText;
 
             Algorithm.Calculate(_supply, _demand, _costs);
         }
 
         private void ProducersCountTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
-            dynamic producersCount = int.Parse(producersCountTextBox.Text);
-            producersCountTextBox.Text = producersCount.ToString();
+            try
+            {
+                _producersCount = int.Parse(ProducersCountTextBox.Text);
+            }
+            catch (Exception)
+            {
+                return;
+            }
+
+            ProducersCountTextBox.Text = _producersCount.ToString();
+            PrintCanvasGrid();
         }
 
         private void ReceiversCountTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
-            dynamic receiversCount = int.Parse(producersCountTextBox.Text);
-            producersCountTextBox.Text = receiversCount.ToString();
+            try
+            {
+                _receiversCount = int.Parse(ReceiversCountTextBox.Text);
+            }
+            catch (Exception)
+            {
+                return;
+            }
+
+            ReceiversCountTextBox.Text = _receiversCount.ToString();
+            PrintCanvasGrid();
         }
 
         private void ProducersCountTextBox_OnPreviewTextInput(object sender, TextCompositionEventArgs e)
@@ -72,6 +89,49 @@ namespace Logistics_Transport_Issue
         private void ReceiversCountTextBox_OnPreviewTextInput(object sender, TextCompositionEventArgs e)
         {
             e.Handled = !InputRegex.IsMatch(e.Text);
+        }
+
+        private void CanvasSizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            PrintCanvasGrid();
+        }
+        private void PrintCanvasGrid()
+        {
+            if (TableCanvas == null) return;
+
+            TableCanvas.Children.Clear();
+
+            for (var row = 0; row < _producersCount + 1; row++)
+            {
+                var y = 1 + TableCanvas.ActualHeight / _producersCount * row;
+                var line = new Line
+                {
+                    Stroke = Brushes.Black,
+                    X1 = 1,
+                    X2 = TableCanvas.ActualWidth,
+                    Y1 = y,
+                    Y2 = y,
+                    StrokeThickness = 2
+                };
+
+                TableCanvas.Children.Add(line);
+            }
+
+            for (var column = 0; column < _receiversCount + 1; column++)
+            {
+                var x = 1 + TableCanvas.ActualWidth / _receiversCount * column;
+                var line = new Line
+                {
+                    Stroke = Brushes.Black,
+                    X1 = x,
+                    X2 = x,
+                    Y1 = 1,
+                    Y2 = TableCanvas.ActualHeight,
+                    StrokeThickness = 2
+                };
+
+                TableCanvas.Children.Add(line);
+            }
         }
     }
 }
