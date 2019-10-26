@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Remoting.Channels;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -32,6 +33,8 @@ namespace Logistics_Transport_Issue
         private int _producersCount;
         private int _receiversCount;
 
+        private TextBox[,] _textBoxes;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -41,7 +44,6 @@ namespace Logistics_Transport_Issue
         {
             _demand = new[] {20, 40, 90};
             _supply = new[] {50, 70, 30};
-            _costs = new[,] {{3, 5, 7}, {12, 10, 9}, {13, 3, 9}};
 
             var demandSum = _demand.Sum();
             var supplySum = _supply.Sum();
@@ -81,12 +83,23 @@ namespace Logistics_Transport_Issue
             PrintCanvasGrid();
         }
 
-        private void ProducersCountTextBox_OnPreviewTextInput(object sender, TextCompositionEventArgs e)
+        private void TextBox_TextChanged(object sender, TextChangedEventArgs e, int row, int column)
         {
-            e.Handled = !InputRegex.IsMatch(e.Text);
+            int deliveryCosts;
+            try
+            {
+                deliveryCosts = int.Parse(_textBoxes[row, column].Text);
+            }
+            catch (Exception)
+            {
+                return;
+            }
+
+            _costs[row, column] = deliveryCosts;
+            _textBoxes[row, column].Text = deliveryCosts.ToString();
         }
 
-        private void ReceiversCountTextBox_OnPreviewTextInput(object sender, TextCompositionEventArgs e)
+        private void TextBox_OnPreviewTextInput(object sender, TextCompositionEventArgs e)
         {
             e.Handled = !InputRegex.IsMatch(e.Text);
         }
@@ -95,12 +108,15 @@ namespace Logistics_Transport_Issue
         {
             PrintCanvasGrid();
         }
+
         private void PrintCanvasGrid()
         {
             if (TableCanvas == null) return;
 
             TableCanvas.Children.Clear();
 
+
+            //Print rows
             for (var row = 0; row < _producersCount + 1; row++)
             {
                 var y = 1 + TableCanvas.ActualHeight / _producersCount * row;
@@ -117,6 +133,7 @@ namespace Logistics_Transport_Issue
                 TableCanvas.Children.Add(line);
             }
 
+            //Print columns
             for (var column = 0; column < _receiversCount + 1; column++)
             {
                 var x = 1 + TableCanvas.ActualWidth / _receiversCount * column;
@@ -131,6 +148,32 @@ namespace Logistics_Transport_Issue
                 };
 
                 TableCanvas.Children.Add(line);
+            }
+
+            _textBoxes = new TextBox[_producersCount, _receiversCount];
+            _costs = new int[_producersCount, _receiversCount];
+
+            //Print TextBoxes
+            for (var row = 0; row < _producersCount; row++)
+            {
+                for (var column = 0; column < _receiversCount; column++)
+                {
+                    var textBox = new TextBox();
+                    var textBoxRow = row;
+                    var textBoxColumn = column;
+
+                    textBox.PreviewTextInput += TextBox_OnPreviewTextInput;
+                    textBox.TextChanged += (sender, e) => TextBox_TextChanged(sender, e, textBoxRow, textBoxColumn);
+
+                    textBox.Width = TableCanvas.ActualWidth / _receiversCount - 5;
+                    textBox.Height = TableCanvas.ActualHeight / _producersCount - 5;
+
+                    Canvas.SetLeft(textBox, 3 + TableCanvas.ActualWidth / _receiversCount * column);
+                    Canvas.SetTop(textBox, 3 + TableCanvas.ActualHeight / _producersCount * row);
+                    TableCanvas.Children.Add(textBox);
+
+                    _textBoxes[row, column] = textBox;
+                }
             }
         }
     }

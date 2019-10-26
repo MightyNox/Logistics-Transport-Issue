@@ -7,7 +7,7 @@
         mc:Ignorable="d"
         Title="MainWindow" MinHeight="450" MinWidth="900" Height="450" Width="900">
 
-	<Grid ShowGridLines="True">
+	<Grid>
 		<Grid.ColumnDefinitions>
             <ColumnDefinition Width="20" />
             <ColumnDefinition Width="*" />
@@ -44,10 +44,10 @@
 			</Grid.RowDefinitions>
  
 			<Label Grid.Row="0" Grid.Column="0" x:Name="ProducersCountLabel" Content="Producers count:" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-			<TextBox Grid.Row="0" Grid.Column="1" x:Name="ProducersCountTextBox" HorizontalAlignment="Stretch" Margin="10,0,10,0" TextWrapping="Wrap" Text="1" VerticalAlignment="Center" Height="20" TextChanged="ProducersCountTextBox_TextChanged" PreviewTextInput="ProducersCountTextBox_OnPreviewTextInput"/>
+			<TextBox Grid.Row="0" Grid.Column="1" x:Name="ProducersCountTextBox" HorizontalAlignment="Stretch" Margin="10,0,10,0" TextWrapping="Wrap" Text="1" VerticalAlignment="Center" Height="20" TextChanged="ProducersCountTextBox_TextChanged" PreviewTextInput="TextBox_OnPreviewTextInput"/>
 
 			<Label Grid.Row="1" Grid.Column="0" x:Name="ReceiversCountLabel" Content="Receivers count:" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-			<TextBox Grid.Row="1" Grid.Column="1" x:Name="ReceiversCountTextBox" HorizontalAlignment="Stretch" Margin="10,0,10,0" TextWrapping="Wrap" Text="1" VerticalAlignment="Center" Height="20" TextChanged="ReceiversCountTextBox_TextChanged" PreviewTextInput="ReceiversCountTextBox_OnPreviewTextInput"/>
+            <TextBox Grid.Row="1" Grid.Column="1" x:Name="ReceiversCountTextBox" HorizontalAlignment="Stretch" Margin="10,0,10,0" TextWrapping="Wrap" Text="1" VerticalAlignment="Center" Height="20" TextChanged="ReceiversCountTextBox_TextChanged" PreviewTextInput="TextBox_OnPreviewTextInput"/>
 		</Grid>
 
 		<Grid Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Grid.RowSpan="3">
