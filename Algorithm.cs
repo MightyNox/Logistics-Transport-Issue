@@ -22,7 +22,17 @@ namespace Logistics_Transport_Issue
 
             Console.WriteLine();
 
-            CalculateDeltas(distribution, costs, alphasAndBetas[0], alphasAndBetas[1]);
+            var deltas = CalculateDeltas(distribution, costs, alphasAndBetas[0], alphasAndBetas[1]);
+
+            Console.WriteLine();
+
+            if (!IsAnyValueNegative(deltas))
+            {
+                Console.WriteLine(@"Algorithm completed!");
+
+                Console.WriteLine(@"Total costs: " + CalculateTotalCosts(distribution, costs));
+                return;
+            }
         }
 
         private static void InsertFictionalSupplierOrReceiver(ref int[] supply, ref int[] demand)
@@ -125,7 +135,7 @@ namespace Logistics_Transport_Issue
             };
         }
 
-        private static void CalculateDeltas(int[,] distribution, int[,] costs, IReadOnlyList<int> alphas, IReadOnlyList<int> betas)
+        private static int[,] CalculateDeltas(int[,] distribution, int[,] costs, IReadOnlyList<int> alphas, IReadOnlyList<int> betas)
         {
             var rows = costs.GetLength(0);
             var columns = costs.GetLength(1);
@@ -166,11 +176,49 @@ namespace Logistics_Transport_Issue
 
                 Console.WriteLine();
             }
+
+            return deltas;
+        }
+
+        private static bool IsAnyValueNegative(int[,] array)
+        {
+            var rows = array.GetLength(0);
+            var columns = array.GetLength(1);
+
+            for (var row = 0; row < rows; row++)
+            {
+                for (var column = 0; column < columns; column++)
+                {
+                    if (array[row, column] < 0)
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        private static int CalculateTotalCosts(int[,] distribution, int[,] costs)
+        {
+            var rows = costs.GetLength(0);
+            var columns = costs.GetLength(1);
+
+            var totalCosts = 0;
+            for (var row = 0; row < rows; row++)
+            {
+                for (var column = 0; column < columns; column++)
+                {
+                    totalCosts += distribution[row, column] * costs[row, column];
+                }
+            }
+
+            return totalCosts;
         }
 
         private static int[] GetIndicesOfMinimum(int[,] array)
         {
-            var minValue = double.PositiveInfinity;
+            var minValue = int.MaxValue;
             var minFirstIndex = -1;
             var minSecondIndex = -1;
 
@@ -178,7 +226,7 @@ namespace Logistics_Transport_Issue
             {
                 for (var j = array.GetLength(1) - 1; j >= 0; --j)
                 {
-                    double value = array[i, j];
+                    var value = array[i, j];
 
                     if (!(value <= minValue)) continue;
 
