@@ -11,21 +11,23 @@
 		<Grid.ColumnDefinitions>
             <ColumnDefinition Width="20" />
             <ColumnDefinition Width="*" />
-			<ColumnDefinition Width="*" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="*" />
 			<ColumnDefinition Width="*" />
 		</Grid.ColumnDefinitions>
 		<Grid.RowDefinitions>
             <RowDefinition Height="20" />
             <RowDefinition Height="*" />
 			<RowDefinition Height="*" />
-			<RowDefinition Height="*" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="*" />
 		</Grid.RowDefinitions>
 
-        <Grid Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="2">
+        <Grid Grid.Row="0" Grid.Column="2" Grid.ColumnSpan="2">
             <TextBlock Text="Receivers" VerticalAlignment="Bottom" HorizontalAlignment="Center"/>
         </Grid>
 
-        <Grid Grid.Row="1" Grid.Column="0" Grid.RowSpan="3">
+        <Grid Grid.Row="2" Grid.Column="0" Grid.RowSpan="3">
             <TextBlock Text="Producers" VerticalAlignment="Center" HorizontalAlignment="Right">
                 <TextBlock.LayoutTransform>
                     <RotateTransform Angle="-90" />
@@ -33,7 +35,7 @@
             </TextBlock>
         </Grid>
 
-        <Grid Grid.Row="1" Grid.Column="3">
+        <Grid Grid.Row="2" Grid.Column="4">
 			<Grid.ColumnDefinitions>
 				<ColumnDefinition Width="*" />
 				<ColumnDefinition Width="*" />
@@ -50,15 +52,23 @@
             <TextBox Grid.Row="1" Grid.Column="1" x:Name="ReceiversCountTextBox" HorizontalAlignment="Stretch" Margin="10,0,10,0" TextWrapping="Wrap" Text="1" VerticalAlignment="Center" Height="20" TextChanged="ReceiversCountTextBox_TextChanged" PreviewTextInput="TextBox_OnPreviewTextInput"/>
 		</Grid>
 
-		<Grid Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Grid.RowSpan="3">
-            <Canvas Name="TableCanvas" HorizontalAlignment="Stretch" Margin="5,5,5,5" VerticalAlignment="Stretch" Background="DarkGray" SizeChanged="CanvasSizeChanged"/>
+        <Grid Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="2">
+            <Canvas Name="DemandCanvas" HorizontalAlignment="Stretch" Margin="5,5,5,5" VerticalAlignment="Stretch" Background="DarkGray" SizeChanged="CanvasSizeChanged"/>
+        </Grid>
+
+        <Grid Grid.Row="2" Grid.Column="1" Grid.RowSpan="3">
+            <Canvas Name="ProducersCanvas" HorizontalAlignment="Stretch" Margin="5,5,5,5" VerticalAlignment="Stretch" Background="DarkGray" SizeChanged="CanvasSizeChanged"/>
+        </Grid>
+
+        <Grid Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="2" Grid.RowSpan="3">
+            <Canvas Name="CostsCanvas" HorizontalAlignment="Stretch" Margin="5,5,5,5" VerticalAlignment="Stretch" Background="DarkGray" SizeChanged="CanvasSizeChanged"/>
 		</Grid>
 
-        <Grid Grid.Row="2" Grid.Column="3">
+        <Grid Grid.Row="3" Grid.Column="4">
             <Label x:Name="TransportBalanceLabel" Content="" HorizontalAlignment="Center" VerticalAlignment="Center"/>
         </Grid>
 
-		<Grid Grid.Row="3" Grid.Column="3">
+		<Grid Grid.Row="4" Grid.Column="4">
 			<Button x:Name="CalculateButton" Content="Calculate" HorizontalAlignment="Stretch" Margin="50,25,50,25" VerticalAlignment="Stretch" Click="CalculateButton_Click"/>
 		</Grid>
 

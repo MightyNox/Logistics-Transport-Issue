@@ -64,7 +64,9 @@ namespace Logistics_Transport_Issue
             }
 
             ProducersCountTextBox.Text = _producersCount.ToString();
-            PrintCanvasGrid();
+
+            DisplayCostsCanvas();
+            DisplayProducersCanvas();
         }
 
         private void ReceiversCountTextBox_TextChanged(object sender, TextChangedEventArgs e)
@@ -79,7 +81,9 @@ namespace Logistics_Transport_Issue
             }
 
             ReceiversCountTextBox.Text = _receiversCount.ToString();
-            PrintCanvasGrid();
+
+            DisplayCostsCanvas();
+            DisplayReceiversCanvas();
         }
 
         private void CostsTextBox_TextChanged(object sender, TextChangedEventArgs e, int row, int column)
@@ -137,57 +141,56 @@ namespace Logistics_Transport_Issue
 
         private void CanvasSizeChanged(object sender, SizeChangedEventArgs e)
         {
-            PrintCanvasGrid();
+            DisplayCostsCanvas();
+            DisplayReceiversCanvas();
+            DisplayProducersCanvas();
         }
 
-        private void PrintCanvasGrid()
+        private void DisplayCostsCanvas()
         {
-            if (TableCanvas == null) return;
+            if (CostsCanvas == null) return;
 
-            TableCanvas.Children.Clear();
-
-            var columnsSeparatorsCount = _receiversCount + 1;
-            var rowsSeparatorsCount = _producersCount + 1;
+            CostsCanvas.Children.Clear();
 
             //Print rows
             for (var row = 0; row < _producersCount + 1; row++)
             {
-                var y = 1 + TableCanvas.ActualHeight / rowsSeparatorsCount * row;
+                var y = 1 + CostsCanvas.ActualHeight / _producersCount * row;
                 var line = new Line
                 {
                     Stroke = Brushes.Black,
                     X1 = 1,
-                    X2 = TableCanvas.ActualWidth,
+                    X2 = CostsCanvas.ActualWidth,
                     Y1 = y,
                     Y2 = y,
                     StrokeThickness = 2
                 };
 
-                TableCanvas.Children.Add(line);
+                CostsCanvas.Children.Add(line);
             }
 
             //Print columns
             for (var column = 0; column < _receiversCount + 1; column++)
             {
-                var x = 1 + TableCanvas.ActualWidth / columnsSeparatorsCount * column;
+                var x = 1 + CostsCanvas.ActualWidth / _receiversCount * column;
                 var line = new Line
                 {
                     Stroke = Brushes.Black,
                     X1 = x,
                     X2 = x,
                     Y1 = 1,
-                    Y2 = TableCanvas.ActualHeight,
+                    Y2 = CostsCanvas.ActualHeight,
                     StrokeThickness = 2
                 };
 
-                TableCanvas.Children.Add(line);
+                CostsCanvas.Children.Add(line);
             }
 
             _costsTextBoxes = new TextBox[_producersCount, _receiversCount];
             _costs = new int[_producersCount, _receiversCount];
 
-            var columnWidth = TableCanvas.ActualWidth / columnsSeparatorsCount;
-            var rowHigh = TableCanvas.ActualHeight / rowsSeparatorsCount;
+            var columnWidth = CostsCanvas.ActualWidth / _receiversCount;
+            var rowHigh = CostsCanvas.ActualHeight / _producersCount;
 
             //Print Costs TextBoxes
             for (var row = 0; row < _producersCount; row++)
@@ -202,21 +205,128 @@ namespace Logistics_Transport_Issue
                     textBox.TextChanged += (sender, e) =>
                         CostsTextBox_TextChanged(sender, e, textBoxRow, textBoxColumn);
 
-                    textBox.Width = TableCanvas.ActualWidth / columnsSeparatorsCount - 5;
-                    textBox.Height = TableCanvas.ActualHeight / rowsSeparatorsCount - 5;
+                    textBox.Width = CostsCanvas.ActualWidth / _receiversCount - 5;
+                    textBox.Height = CostsCanvas.ActualHeight / _producersCount - 5;
 
-                    Canvas.SetLeft(textBox, 3 + columnWidth + columnWidth * column);
-                    Canvas.SetTop(textBox, 3 + rowHigh + rowHigh * row);
-                    TableCanvas.Children.Add(textBox);
+                    Canvas.SetLeft(textBox, 3  + columnWidth * column);
+                    Canvas.SetTop(textBox, 3 + rowHigh * row);
+                    CostsCanvas.Children.Add(textBox);
 
                     _costsTextBoxes[row, column] = textBox;
                 }
             }
+        }
+
+        private void DisplayReceiversCanvas()
+        {
+            if (DemandCanvas == null) return;
+
+            DemandCanvas.Children.Clear();
+
+            _demandTextBoxes = new TextBox[_receiversCount];
+            _demand = new int[_receiversCount];
+
+            var columnWidth = DemandCanvas.ActualWidth / _receiversCount;
+
+            //Print rows
+            for (var row = 0; row < 2; row++)
+            {
+                var y = 1 + DemandCanvas.ActualHeight * row;
+                var line = new Line
+                {
+                    Stroke = Brushes.Black,
+                    X1 = 1,
+                    X2 = DemandCanvas.ActualWidth,
+                    Y1 = y,
+                    Y2 = y,
+                    StrokeThickness = 2
+                };
+
+                DemandCanvas.Children.Add(line);
+            }
+
+            //Print columns
+            for (var column = 0; column < _receiversCount + 1; column++)
+            {
+                var x = 1 + DemandCanvas.ActualWidth / _receiversCount * column;
+                var line = new Line
+                {
+                    Stroke = Brushes.Black,
+                    X1 = x,
+                    X2 = x,
+                    Y1 = 1,
+                    Y2 = DemandCanvas.ActualHeight,
+                    StrokeThickness = 2
+                };
+
+                DemandCanvas.Children.Add(line);
+            }
+
+            //Print Demand TextBoxes
+            for (var column = 0; column < _receiversCount; column++)
+            {
+                var textBox = new TextBox();
+                var textBoxColumn = column;
+            
+                textBox.PreviewTextInput += TextBox_OnPreviewTextInput;
+                textBox.TextChanged += (sender, e) => DemandTextBox_TextChanged(sender, e, textBoxColumn);
+            
+                textBox.Width = DemandCanvas.ActualWidth / _receiversCount - 5;
+                textBox.Height = DemandCanvas.ActualHeight - 5;
+            
+                Canvas.SetLeft(textBox, 3 + columnWidth * column);
+                Canvas.SetTop(textBox, 3);
+                DemandCanvas.Children.Add(textBox);
+            
+                _demandTextBoxes[column] = textBox;
+            }
+        }
+
+        private void DisplayProducersCanvas()
+        {
+            if (ProducersCanvas == null) return;
+
+            ProducersCanvas.Children.Clear();
 
             _supplyTextBoxes = new TextBox[_producersCount];
             _supply = new int[_producersCount];
 
-            //Print Supply TextBoxes
+            var rowHigh = ProducersCanvas.ActualHeight / _producersCount;
+
+            //Print columns
+            for (var column = 0; column < 2; column++)
+            {
+                var x = 1 + ProducersCanvas.ActualWidth * column;
+                var line = new Line
+                {
+                    Stroke = Brushes.Black,
+                    X1 = x,
+                    X2 = x,
+                    Y1 = 1,
+                    Y2 = ProducersCanvas.ActualHeight,
+                    StrokeThickness = 2
+                };
+
+                ProducersCanvas.Children.Add(line);
+            }
+
+            //Print rows
+            for (var row = 0; row < _producersCount + 1; row++)
+            {
+                var y = 1 + ProducersCanvas.ActualHeight / _producersCount * row;
+                var line = new Line
+                {
+                    Stroke = Brushes.Black,
+                    X1 = 1,
+                    X2 = ProducersCanvas.ActualWidth,
+                    Y1 = y,
+                    Y2 = y,
+                    StrokeThickness = 2
+                };
+
+                ProducersCanvas.Children.Add(line);
+            }
+
             for (var row = 0; row < _producersCount; row++)
             {
                 var textBox = new TextBox();
@@ -225,38 +335,14 @@ namespace Logistics_Transport_Issue
                 textBox.PreviewTextInput += TextBox_OnPreviewTextInput;
                 textBox.TextChanged += (sender, e) => SupplyTextBox_TextChanged(sender, e, textBoxRow);
 
-                textBox.Width = TableCanvas.ActualWidth / columnsSeparatorsCount - 5;
-                textBox.Height = TableCanvas.ActualHeight / rowsSeparatorsCount - 5;
+                textBox.Width = ProducersCanvas.ActualWidth - 5;
+                textBox.Height = ProducersCanvas.ActualHeight / _producersCount - 5;
 
                 Canvas.SetLeft(textBox, 3);
-                Canvas.SetTop(textBox, 3 + rowHigh + rowHigh * row);
-                TableCanvas.Children.Add(textBox);
+                Canvas.SetTop(textBox, 3 + rowHigh * row);
+                ProducersCanvas.Children.Add(textBox);
 
                 _supplyTextBoxes[row] = textBox;
-            }
-
-            _demandTextBoxes = new TextBox[_receiversCount];
-            _demand = new int[_receiversCount];
-
-            Console.WriteLine(columnsSeparatorsCount);
-
-            //Print Demand TextBoxes
-            for (var column = 0; column < _receiversCount; column++)
-            {
-                var textBox = new TextBox();
-                var textBoxColumn = column;
-
-                textBox.PreviewTextInput += TextBox_OnPreviewTextInput;
-                textBox.TextChanged += (sender, e) => DemandTextBox_TextChanged(sender, e, textBoxColumn);
-
-                textBox.Width = TableCanvas.ActualWidth / columnsSeparatorsCount - 5;
-                textBox.Height = TableCanvas.ActualHeight / rowsSeparatorsCount - 5;
-
-                Canvas.SetLeft(textBox, 3 + columnWidth + columnWidth * column);
-                Canvas.SetTop(textBox, 3);
-                TableCanvas.Children.Add(textBox);
-
-                _demandTextBoxes[column] = textBox;
             }
         }
     }
