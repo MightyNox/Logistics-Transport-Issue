@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Controls.Primitives;
+using System.Linq;
 
 namespace Logistics_Transport_Issue
 {
@@ -92,24 +93,27 @@ namespace Logistics_Transport_Issue
             var alphas = new int?[rows];
             var betas = new int?[columns];
 
-            //TODO investigate edge-case - whether beta can be null
             alphas[0] = 0;
-            for (var row = 0; row < rows; row++)
+            while (alphas.Contains(null) || betas.Contains(null))
             {
-                for (var column = 0; column < columns; column++)
+                for (var row = 0; row < rows; row++)
                 {
-                    if (distribution[row, column] == 0) continue;
+                    for (var column = 0; column < columns; column++)
+                    {
+                        if (distribution[row, column] == 0) continue;
 
-                    if (alphas[row] != null)
-                    {
-                        betas[column] = costs[row, column] - alphas[row];
-                    }
-                    else
-                    {
-                        alphas[row] = costs[row, column] - betas[column];
+                        if (alphas[row] != null && betas[column] == null)
+                        {
+                            betas[column] = costs[row, column] - alphas[row];
+                        }
+                        else if (betas[column] != null && alphas[row] == null)
+                        {
+                            alphas[row] = costs[row, column] - betas[column];
+                        }
                     }
                 }
             }
+
 
             //TODO Save to the file
             Console.Write(@"Alphas: ");
@@ -135,7 +139,8 @@ namespace Logistics_Transport_Issue
             };
         }
 
-        private static int[,] CalculateDeltas(int[,] distribution, int[,] costs, IReadOnlyList<int> alphas, IReadOnlyList<int> betas)
+        private static int[,] CalculateDeltas(int[,] distribution, int[,] costs, IReadOnlyList<int> alphas,
+            IReadOnlyList<int> betas)
         {
             var rows = costs.GetLength(0);
             var columns = costs.GetLength(1);
@@ -170,7 +175,7 @@ namespace Logistics_Transport_Issue
                     {
                         Console.Write(deltas[i, j]);
                     }
-                    
+
                     Console.Write(@" ");
                 }
 

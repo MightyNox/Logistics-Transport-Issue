@@ -141,6 +141,7 @@ namespace Logistics_Transport_Issue
 
         private void CanvasSizeChanged(object sender, SizeChangedEventArgs e)
         {
+            //TODO Split into 3 separate events
             DisplayCostsCanvas();
             DisplayReceiversCanvas();
             DisplayProducersCanvas();
