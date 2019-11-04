@@ -10,6 +10,9 @@ namespace Logistics_Transport_Issue
     {
         public static void Calculate(int[] supply, int[] demand, int[,] costs)
         {
+            supply = new[] {32, 19, 27};
+            demand = new[] {20, 40, 40};
+            costs = new int[,] {{1, 4, 3}, {4, 5, 1}, {2, 6, 5}};
 
             //TODO synchronize with minimal matrix method
             var isFictionalReceiver = false;
@@ -78,7 +81,7 @@ namespace Logistics_Transport_Issue
                 var tmpCostsLength = costs.GetLength(0);
                 for (var i = 0; i < tmpCostsLength; i++)
                 {
-                    tmpCosts[tmpCostsLength - 1, i] = int.MaxValue - 1;
+                    tmpCosts[i, tmpCostsLength - 1] = int.MaxValue - 1;
                 }
             }
             else if (isFictionalProducer)
@@ -86,7 +89,7 @@ namespace Logistics_Transport_Issue
                 var tmpCostsLength = costs.GetLength(1);
                 for (var i = 0; i < tmpCostsLength; i++)
                 {
-                    tmpCosts[i, tmpCostsLength - 1] = int.MaxValue - 1;
+                    tmpCosts[tmpCostsLength - 1, i] = int.MaxValue - 1;
                 }
             }
 
@@ -308,10 +311,8 @@ namespace Logistics_Transport_Issue
 
             if (direction == Direction.Down)
             {
-
                 for (var i = cycleLastElement.Row + 1; i < deltas.GetLength(0); i++)
                 {
-
                     if (deltas[i, cycleLastElement.Column] != 0) continue;
 
 
