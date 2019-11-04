@@ -24,7 +24,7 @@ namespace Logistics_Transport_Issue
     {
         private static readonly Regex InputRegex = new Regex("[0-9]+");
         private const string BalancedTransportText = "Balanced transport detected";
-        private const string UnbalancedTransportText = "Unbalanced transport detected - unsupported";
+        private const string UnbalancedTransportText = "Unbalanced transport detected";
 
         private int[] _supply;
         private int[] _demand;
@@ -205,6 +205,7 @@ namespace Logistics_Transport_Issue
                     textBox.PreviewTextInput += TextBox_OnPreviewTextInput;
                     textBox.TextChanged += (sender, e) =>
                         CostsTextBox_TextChanged(sender, e, textBoxRow, textBoxColumn);
+                    textBox.FontSize= 25;
 
                     textBox.Width = CostsCanvas.ActualWidth / _receiversCount - 5;
                     textBox.Height = CostsCanvas.ActualHeight / _producersCount - 5;
@@ -271,7 +272,8 @@ namespace Logistics_Transport_Issue
             
                 textBox.PreviewTextInput += TextBox_OnPreviewTextInput;
                 textBox.TextChanged += (sender, e) => DemandTextBox_TextChanged(sender, e, textBoxColumn);
-            
+                textBox.FontSize = 25;
+
                 textBox.Width = DemandCanvas.ActualWidth / _receiversCount - 5;
                 textBox.Height = DemandCanvas.ActualHeight - 5;
             
@@ -335,6 +337,7 @@ namespace Logistics_Transport_Issue
 
                 textBox.PreviewTextInput += TextBox_OnPreviewTextInput;
                 textBox.TextChanged += (sender, e) => SupplyTextBox_TextChanged(sender, e, textBoxRow);
+                textBox.FontSize = 25;
 
                 textBox.Width = ProducersCanvas.ActualWidth - 5;
                 textBox.Height = ProducersCanvas.ActualHeight / _producersCount - 5;
