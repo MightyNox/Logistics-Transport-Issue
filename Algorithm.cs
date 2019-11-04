@@ -21,26 +21,52 @@ namespace Logistics_Transport_Issue
 
             Console.WriteLine();
 
-            var alphasAndBetas = CalculateAlphaAndBeta(distribution, costs);
-
-            Console.WriteLine();
-
-            var deltas = CalculateDeltas(distribution, costs, alphasAndBetas[0], alphasAndBetas[1]);
-
-            Console.WriteLine();
-
-
-            if (!IsAnyValueNegative(deltas))
+            while (true)
             {
-                Console.WriteLine(@"Algorithm completed!");
+                var alphasAndBetas = CalculateAlphaAndBeta(distribution, costs);
 
-                Console.WriteLine(@"Total costs: " + CalculateTotalCosts(distribution, costs));
-                return;
+                Console.WriteLine();
+
+                var deltas = CalculateDeltas(distribution, costs, alphasAndBetas[0], alphasAndBetas[1]);
+
+                Console.WriteLine();
+
+
+                if (!IsAnyValueNegative(deltas))
+                {
+                    Console.WriteLine(@"Algorithm completed!");
+
+                    Console.WriteLine(@"Total costs: " + CalculateTotalCosts(distribution, costs));
+                    return;
+                }
+                else
+                {
+                    var cycle = FindCycle(deltas);
+                    Console.WriteLine();
+                    var minimum = GetDistributionCycleBasedMinimum(cycle, distribution);
+                    Console.WriteLine("Minimum: " + minimum);
+
+
+                    Console.WriteLine();
+                    RecalculateDistribution(distribution, cycle, (int)minimum);
+                }
             }
-            else
+        }
+
+        private static int? GetDistributionCycleBasedMinimum(List<Index> cycle, int[,] distribution)
+        {
+            int? min = null;
+            foreach (var currentDistribution in cycle
+                .Select(index => distribution[index.Row, index.Column])
+                .Where((c, i) => i % 2 != 0))
             {
-                FindCycle(deltas);
+                if (min == null)
+                    min = currentDistribution;
+                else if (currentDistribution < min)
+                    min = currentDistribution;
             }
+
+            return min;
         }
 
         private static void InsertFictionalSupplierOrReceiver(ref int[] supply, ref int[] demand, ref int[,] costs,
@@ -218,7 +244,7 @@ namespace Logistics_Transport_Issue
             return deltas;
         }
 
-        private static void FindCycle(int[,] deltas)
+        private static List<Index> FindCycle(int[,] deltas)
         {
             var indices = GetIndicesOfMinimum(deltas);
             var firstElementIndex = new Index((uint) indices[0], (uint) indices[1]);
@@ -256,6 +282,8 @@ namespace Logistics_Transport_Issue
 
                 Console.WriteLine();
             }
+
+            return cycle;
         }
 
         private static void Go(List<List<Index>> cycles, Index firstElementIndex, Direction direction,
@@ -284,6 +312,7 @@ namespace Logistics_Transport_Issue
         }
 
         //TODO deltas rows and columns size has to be greater than 1
+        //TODO When we cant move in the same direction 2 times
         private static bool AddIndexToCycle(Direction direction, List<Index> cycle, int[,] deltas,
             ref bool[,] cycleUsedValues)
         {
@@ -361,6 +390,30 @@ namespace Logistics_Transport_Issue
                 return false;
 
             return true;
+        }
+
+        private static void RecalculateDistribution(int[,] distribution, List<Index> cycle, int minDistribution)
+        {
+            var oddIndexes = cycle.Where((c, i) => i % 2 != 0);
+            var evenIndexes = cycle.Where((c, i) => i % 2 == 0);
+
+            var zipped = oddIndexes.Zip(evenIndexes, (o, e) => new {Odd = o, Even = e});
+            foreach (var index in zipped)
+            {
+                distribution[index.Odd.Row, index.Odd.Column] -= minDistribution;
+                distribution[index.Even.Row, index.Even.Column] += minDistribution;
+            }
+
+            Console.WriteLine("New distribution");
+            for (var row = 0; row < distribution.GetLength(0); row++)
+            {
+                for (var column = 0; column < distribution.GetLength(1); column++)
+                {
+                    Console.Write(distribution[row, column] + " ");
+                }
+
+                Console.WriteLine();
+            }
         }
 
         private static bool IsAnyValueNegative(int[,] array)
