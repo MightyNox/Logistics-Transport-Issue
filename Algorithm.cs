@@ -10,10 +10,6 @@ namespace Logistics_Transport_Issue
     {
         public static void Calculate(int[] supply, int[] demand, int[,] costs)
         {
-            supply = new[] {32, 19, 27};
-            demand = new[] {20, 40, 40};
-            costs = new int[,] {{1, 4, 3}, {4, 5, 1}, {2, 6, 5}};
-
             //TODO synchronize with minimal matrix method
             var isFictionalReceiver = false;
             var isFictionalProducer = false;
