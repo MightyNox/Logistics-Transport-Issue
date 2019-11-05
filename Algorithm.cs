@@ -16,6 +16,15 @@ namespace Logistics_Transport_Issue
 
         public static void Calculate(int[] supply, int[] demand, int[,] costs)
         {
+            // Example 1
+            //            demand = new[] {20, 40, 40};
+            //            supply = new[] {32, 19, 27};
+            //            costs = new[,] {{1, 4, 3}, {4, 5, 1}, {2, 6, 5}};
+
+            // Example 2
+            //            demand = new[] {90, 120, 150, 170};
+            //            supply = new[] {100, 80, 50, 200};
+            //            costs = new[,] {{2, 4, 5, 3}, {7, 1, 2, 5}, {4, 6, 7, 2}, {7, 8, 2, 1}};
 
             CreateReport();
 
@@ -325,7 +334,7 @@ namespace Logistics_Transport_Issue
             var cycle = new List<Index> {firstElementIndex};
             var cycleUsedValues = new bool[deltas.GetLength(0), deltas.GetLength(1)];
             cycleUsedValues[firstElementIndex.Row, firstElementIndex.Column] = true;
-            Go(cycles, firstElementIndex, Direction.None, cycle, deltas, cycleUsedValues);
+            Go(cycles, firstElementIndex, Direction.None, cycle, deltas, cycleUsedValues, Direction.None);
 
             cycles = cycles.OrderBy(tmp_cycle => tmp_cycle.Count).ToList();
             cycle = cycles.First();
@@ -339,21 +348,30 @@ namespace Logistics_Transport_Issue
             //Save to the file
             var table = new PdfPTable(deltas.GetLength(1));
             var cell = new PdfPCell(new Phrase("Cycle")) {HorizontalAlignment = 1, Colspan = deltas.GetLength(1)};
-            table.AddCell(cell);
-            for (var row = 0; row < deltas.GetLength(0); row++)
+
+            var cycleArray = new string[deltas.GetLength(0), deltas.GetLength(1)];
+            for (int m = 0; m < cycleArray.GetLength(0); m++)
             {
-                for (var column = 0; column < deltas.GetLength(1); column++)
+                for (int n = 0; n < cycleArray.GetLength(1); n++)
                 {
-                    if (tmp[row, column])
-                    {
-                        cell = new PdfPCell(new Phrase("X")) {HorizontalAlignment = 1};
-                        table.AddCell(cell);
-                    }
-                    else
-                    {
-                        cell = new PdfPCell(new Phrase(" ")) {HorizontalAlignment = 1};
-                        table.AddCell(cell);
-                    }
+                    cycleArray[m, n] = " ";
+                }
+            }
+
+            var i = 0;
+            foreach (var index in cycle)
+            {
+                i++;
+                cycleArray[index.Row, index.Column] = i.ToString();
+            }
+
+            table.AddCell(cell);
+            for (var row = 0; row < cycleArray.GetLength(0); row++)
+            {
+                for (var column = 0; column < cycleArray.GetLength(1); column++)
+                {
+                    cell = new PdfPCell(new Phrase(cycleArray[row, column])) {HorizontalAlignment = 1};
+                    table.AddCell(cell);
                 }
             }
 
@@ -363,8 +381,8 @@ namespace Logistics_Transport_Issue
             return cycle;
         }
 
-        private static void Go(List<List<Index>> cycles, Index firstElementIndex, Direction direction,
-            List<Index> cycle, int[,] deltas, bool[,] cycleUsedValues)
+        private static void Go(ICollection<List<Index>> cycles, Index firstElementIndex, Direction direction,
+            List<Index> cycle, int[,] deltas, bool[,] cycleUsedValues, Direction previousDirection)
         {
             if (cycle.Count > deltas.Length)
                 return;
@@ -377,21 +395,20 @@ namespace Logistics_Transport_Issue
 
             cycle = new List<Index>(cycle);
             cycleUsedValues = cycleUsedValues.Clone() as bool[,];
-            if (AddIndexToCycle(direction, cycle, deltas, ref cycleUsedValues))
+            if (AddIndexToCycle(direction, cycle, deltas, ref cycleUsedValues, ref previousDirection))
             {
                 return;
             }
 
-            Go(cycles, firstElementIndex, Direction.Left, cycle, deltas, cycleUsedValues);
-            Go(cycles, firstElementIndex, Direction.Up, cycle, deltas, cycleUsedValues);
-            Go(cycles, firstElementIndex, Direction.Right, cycle, deltas, cycleUsedValues);
-            Go(cycles, firstElementIndex, Direction.Down, cycle, deltas, cycleUsedValues);
+            Go(cycles, firstElementIndex, Direction.Left, cycle, deltas, cycleUsedValues, previousDirection);
+            Go(cycles, firstElementIndex, Direction.Up, cycle, deltas, cycleUsedValues, previousDirection);
+            Go(cycles, firstElementIndex, Direction.Right, cycle, deltas, cycleUsedValues, previousDirection);
+            Go(cycles, firstElementIndex, Direction.Down, cycle, deltas, cycleUsedValues, previousDirection);
         }
 
         //TODO deltas rows and columns size has to be greater than 1
-        //TODO When we cant move in the same direction 2 times
-        private static bool AddIndexToCycle(Direction direction, List<Index> cycle, int[,] deltas,
-            ref bool[,] cycleUsedValues)
+        private static bool AddIndexToCycle(Direction direction, ICollection<Index> cycle, int[,] deltas,
+            ref bool[,] cycleUsedValues, ref Direction previousDirection)
         {
             if (direction == Direction.None)
                 return false;
@@ -405,8 +422,11 @@ namespace Logistics_Transport_Issue
 
                     if (cycleUsedValues[cycleLastElement.Row, i]) continue;
 
+                    if (previousDirection == Direction.Left) cycle.Remove(cycleLastElement);
+
                     cycleUsedValues[cycleLastElement.Row, i] = true;
                     cycle.Add(new Index(cycleLastElement.Row, i));
+                    previousDirection = Direction.Left;
                     return false;
                 }
             }
@@ -420,8 +440,11 @@ namespace Logistics_Transport_Issue
 
                     if (cycleUsedValues[i, cycleLastElement.Column]) continue;
 
+                    if (previousDirection == Direction.Down) cycle.Remove(cycleLastElement);
+
                     cycleUsedValues[i, cycleLastElement.Column] = true;
                     cycle.Add(new Index(i, cycleLastElement.Column));
+                    previousDirection = Direction.Down;
                     return false;
                 }
             }
@@ -434,8 +457,11 @@ namespace Logistics_Transport_Issue
 
                     if (cycleUsedValues[cycleLastElement.Row, i]) continue;
 
+                    if (previousDirection == Direction.Right) cycle.Remove(cycleLastElement);
+
                     cycleUsedValues[cycleLastElement.Row, i] = true;
                     cycle.Add(new Index(cycleLastElement.Row, i));
+                    previousDirection = Direction.Right;
                     return false;
                 }
             }
@@ -448,8 +474,11 @@ namespace Logistics_Transport_Issue
 
                     if (cycleUsedValues[i, cycleLastElement.Column]) continue;
 
+                    if (previousDirection == Direction.Up) cycle.Remove(cycleLastElement);
+
                     cycleUsedValues[i, cycleLastElement.Column] = true;
                     cycle.Add(new Index(i, cycleLastElement.Column));
+                    previousDirection = Direction.Up;
                     return false;
                 }
             }
@@ -475,24 +504,69 @@ namespace Logistics_Transport_Issue
             var evenIndexes = cycle.Where((c, i) => i % 2 == 0);
 
             var zipped = oddIndexes.Zip(evenIndexes, (o, e) => new {Odd = o, Even = e});
-            foreach (var index in zipped)
-            {
-                distribution[index.Odd.Row, index.Odd.Column] -= minDistribution;
-                distribution[index.Even.Row, index.Even.Column] += minDistribution;
-            }
 
             //Save to the file
             var table = new PdfPTable(distribution.GetLength(1));
 
-            var cell = new PdfPCell(new Phrase("Distribution"))
-                { HorizontalAlignment = 1, Colspan = distribution.GetLength(1) };
+            var cell = new PdfPCell(new Phrase("Distribution v1"))
+                {HorizontalAlignment = 1, Colspan = distribution.GetLength(1)};
             table.AddCell(cell);
 
             for (var row = 0; row < distribution.GetLength(0); row++)
             {
                 for (var column = 0; column < distribution.GetLength(1); column++)
                 {
-                    cell = new PdfPCell(new Phrase(distribution[row, column].ToString())) { HorizontalAlignment = 1 };
+                    var printed = false;
+                    foreach (var index in zipped)
+                    {
+                        if (row == index.Odd.Row && column == index.Odd.Column)
+                        {
+                            printed = true;
+                            cell = new PdfPCell(new Phrase(distribution[row, column] + " - " + minDistribution,
+                                    FontFactory.GetFont(FontFactory.DefaultEncoding, Font.DEFAULTSIZE, BaseColor.BLUE)))
+                                {HorizontalAlignment = 1};
+                        }
+                        else if (row == index.Even.Row && column == index.Even.Column)
+                        {
+                            printed = true;
+                            cell = new PdfPCell(new Phrase(distribution[row, column] + " + " + minDistribution,
+                                    FontFactory.GetFont(FontFactory.DefaultEncoding, Font.DEFAULTSIZE, BaseColor.RED)))
+                                {HorizontalAlignment = 1};
+                        }
+                    }
+
+                    if (!printed)
+                    {
+                        cell = new PdfPCell(new Phrase(distribution[row, column].ToString())) {HorizontalAlignment = 1};
+                    }
+
+                    table.AddCell(cell);
+                }
+            }
+
+            _reportFile.Add(table);
+            _reportFile.Add(Chunk.NEWLINE);
+
+            //CALCULATE
+            foreach (var index in zipped)
+            {
+                distribution[index.Odd.Row, index.Odd.Column] -= minDistribution;
+                distribution[index.Even.Row, index.Even.Column] += minDistribution;
+            }
+
+
+            // Save v2
+            table = new PdfPTable(distribution.GetLength(1));
+
+            cell = new PdfPCell(new Phrase("Distribution v2"))
+                {HorizontalAlignment = 1, Colspan = distribution.GetLength(1)};
+            table.AddCell(cell);
+
+            for (var row = 0; row < distribution.GetLength(0); row++)
+            {
+                for (var column = 0; column < distribution.GetLength(1); column++)
+                {
+                    cell = new PdfPCell(new Phrase(distribution[row, column].ToString())) {HorizontalAlignment = 1};
                     table.AddCell(cell);
                 }
             }
