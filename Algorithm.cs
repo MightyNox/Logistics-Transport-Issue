@@ -16,6 +16,9 @@ namespace Logistics_Transport_Issue
 
         public static void Calculate(int[] supply, int[] demand, int[,] costs)
         {
+            supply = supply.Clone() as int[];
+            demand = demand.Clone() as int[];
+            costs = costs.Clone() as int[,];
             // Example 1
             //            demand = new[] {20, 40, 40};
             //            supply = new[] {32, 19, 27};
