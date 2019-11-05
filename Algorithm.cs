@@ -1,16 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Windows.Controls;
+using iTextSharp.text;
+using iTextSharp.text.pdf;
 using Logistics_Transport_Issue.Structures;
 
 namespace Logistics_Transport_Issue
 {
     internal class Algorithm
     {
+        private static Document _reportFile;
+        private static string _fileName;
+
         public static void Calculate(int[] supply, int[] demand, int[,] costs)
         {
-            //TODO synchronize with minimal matrix method
+
+            CreateReport();
+
             var isFictionalReceiver = false;
             var isFictionalProducer = false;
             InsertFictionalSupplierOrReceiver(ref supply, ref demand, ref costs, ref isFictionalReceiver,
@@ -19,38 +27,74 @@ namespace Logistics_Transport_Issue
             var distribution =
                 MinimalElementMatrixMethod(supply, demand, costs, isFictionalReceiver, isFictionalProducer);
 
-            Console.WriteLine();
+            _reportFile.Add(new Paragraph("Total costs: " + CalculateTotalCosts(distribution, costs),
+                    FontFactory.GetFont(FontFactory.DefaultEncoding, 15, BaseColor.RED))
+                {Alignment = Element.ALIGN_CENTER});
 
+
+            var iteration = 1;
             while (true)
             {
+                _reportFile.Add(new Phrase(Chunk.NEWLINE));
+
+                var iterationParagraph = new Paragraph("Iteration " + iteration,
+                        FontFactory.GetFont(FontFactory.DefaultEncoding, 16))
+                    {Alignment = Element.ALIGN_CENTER};
+                _reportFile.Add(new Paragraph(iterationParagraph));
+                _reportFile.Add(new Paragraph(" "));
+
                 var alphasAndBetas = CalculateAlphaAndBeta(distribution, costs);
 
-                Console.WriteLine();
-
                 var deltas = CalculateDeltas(distribution, costs, alphasAndBetas[0], alphasAndBetas[1]);
-
-                Console.WriteLine();
 
 
                 if (!IsAnyValueNegative(deltas))
                 {
-                    Console.WriteLine(@"Algorithm completed!");
-
-                    Console.WriteLine(@"Total costs: " + CalculateTotalCosts(distribution, costs));
-                    return;
+                    _reportFile.Add(new Paragraph("Algorithm completed!",
+                            FontFactory.GetFont(FontFactory.DefaultEncoding, 15))
+                        {Alignment = Element.ALIGN_CENTER});
+                    _reportFile.Add(new Paragraph(" "));
+                    _reportFile.Add(new Paragraph("Total costs: " + CalculateTotalCosts(distribution, costs),
+                            FontFactory.GetFont(FontFactory.DefaultEncoding, 15, BaseColor.GREEN))
+                        {Alignment = Element.ALIGN_CENTER});
+                    break;
                 }
-                else
-                {
-                    var cycle = FindCycle(deltas);
-                    Console.WriteLine();
-                    var minimum = GetDistributionCycleBasedMinimum(cycle, distribution);
-                    Console.WriteLine("Minimum: " + minimum);
+
+                var cycle = FindCycle(deltas);
+                var minimum = GetDistributionCycleBasedMinimum(cycle, distribution);
+                _reportFile.Add(new Paragraph("Minimum: " + minimum)
+                    {Alignment = Element.ALIGN_CENTER});
+                _reportFile.Add(new Paragraph(" "));
 
 
-                    Console.WriteLine();
-                    RecalculateDistribution(distribution, cycle, (int)minimum);
-                }
+                RecalculateDistribution(distribution, cycle, (int) minimum);
+
+                iteration++;
             }
+
+            CloseReport();
+        }
+
+        private static void CloseReport()
+        {
+            _reportFile.Close();
+            System.Diagnostics.Process.Start(_fileName);
+        }
+
+        private static void CreateReport()
+        {
+            _fileName = "report.pdf";
+            File.Delete(_fileName);
+
+            _reportFile = new Document();
+            PdfWriter.GetInstance(_reportFile, new FileStream(_fileName, FileMode.Create));
+            _reportFile.Open();
+
+            var title = new Paragraph("Report", FontFactory.GetFont(FontFactory.DefaultEncoding, 30))
+                {Alignment = Element.ALIGN_CENTER};
+
+            _reportFile.Add(title);
+            _reportFile.Add(Chunk.NEWLINE);
         }
 
         private static int? GetDistributionCycleBasedMinimum(List<Index> cycle, int[,] distribution)
@@ -130,16 +174,29 @@ namespace Logistics_Transport_Issue
                 tmpCosts[row, column] = int.MaxValue;
             }
 
-            //TODO Save to the file
+            //Save to the file
+            var paragraph = new Paragraph("Minimal Matrix Method", FontFactory.GetFont(FontFactory.DefaultEncoding, 20))
+                {Alignment = Element.ALIGN_CENTER};
+            _reportFile.Add(paragraph);
+            _reportFile.Add(new Paragraph(" "));
+
+            var table = new PdfPTable(distribution.GetLength(1));
+
+            var cell = new PdfPCell(new Phrase("Distribution"))
+                {HorizontalAlignment = 1, Colspan = distribution.GetLength(1)};
+            table.AddCell(cell);
+
             for (var i = 0; i < distribution.GetLength(0); i++)
             {
                 for (var j = 0; j < distribution.GetLength(1); j++)
                 {
-                    Console.Write(distribution[i, j] + "\t");
+                    cell = new PdfPCell(new Phrase(distribution[i, j].ToString())) {HorizontalAlignment = 1};
+                    table.AddCell(cell);
                 }
-
-                Console.WriteLine();
             }
+
+            _reportFile.Add(table);
+            _reportFile.Add(Chunk.NEWLINE);
 
             return distribution;
         }
@@ -174,22 +231,31 @@ namespace Logistics_Transport_Issue
             }
 
 
-            //TODO Save to the file
-            Console.Write(@"Alphas: ");
+            //Save to the file
+            _reportFile.Add(new Paragraph(""));
+
+            var table = new PdfPTable(alphas.Length + 1);
+            var cell = new PdfPCell(new Phrase("Alphas")) {HorizontalAlignment = 1};
+            table.AddCell(cell);
             for (var i = 0; i < rows; i++)
             {
-                Console.Write(alphas[i] + @" ");
+                cell = new PdfPCell(new Phrase(alphas[i].ToString())) {HorizontalAlignment = 1};
+                table.AddCell(cell);
             }
 
-            Console.WriteLine();
+            _reportFile.Add(table);
 
-            Console.Write(@"Betas: ");
+            table = new PdfPTable(betas.Length + 1);
+            cell = new PdfPCell(new Phrase("Betas")) {HorizontalAlignment = 1};
+            table.AddCell(cell);
             for (var i = 0; i < columns; i++)
             {
-                Console.Write(betas[i] + @" ");
+                cell = new PdfPCell(new Phrase(betas[i].ToString())) {HorizontalAlignment = 1};
+                table.AddCell(cell);
             }
 
-            Console.WriteLine();
+            _reportFile.Add(table);
+            _reportFile.Add(new Paragraph(" "));
 
             return new[]
             {
@@ -221,25 +287,30 @@ namespace Logistics_Transport_Issue
             }
 
 
-            //TODO Save to the file
+            //Save to the file
+            var table = new PdfPTable(columns);
+            var cell = new PdfPCell(new Phrase("Deltas")) {HorizontalAlignment = 1, Colspan = columns};
+            table.AddCell(cell);
+
             for (var i = 0; i < rows; i++)
             {
                 for (var j = 0; j < columns; j++)
                 {
                     if (deltas[i, j] == 0)
                     {
-                        Console.Write(@"x");
+                        cell = new PdfPCell(new Phrase("X")) {HorizontalAlignment = 1};
+                        table.AddCell(cell);
                     }
                     else
                     {
-                        Console.Write(deltas[i, j]);
+                        cell = new PdfPCell(new Phrase(deltas[i, j].ToString())) {HorizontalAlignment = 1};
+                        table.AddCell(cell);
                     }
-
-                    Console.Write(@" ");
                 }
-
-                Console.WriteLine();
             }
+
+            _reportFile.Add(table);
+            _reportFile.Add(new Paragraph(" "));
 
             return deltas;
         }
@@ -259,29 +330,35 @@ namespace Logistics_Transport_Issue
             cycles = cycles.OrderBy(tmp_cycle => tmp_cycle.Count).ToList();
             cycle = cycles.First();
 
-            Console.WriteLine("Cycle");
             var tmp = new bool[deltas.GetLength(0), deltas.GetLength(1)];
             foreach (var x in cycle)
             {
                 tmp[x.Row, x.Column] = true;
             }
 
+            //Save to the file
+            var table = new PdfPTable(deltas.GetLength(1));
+            var cell = new PdfPCell(new Phrase("Cycle")) {HorizontalAlignment = 1, Colspan = deltas.GetLength(1)};
+            table.AddCell(cell);
             for (var row = 0; row < deltas.GetLength(0); row++)
             {
                 for (var column = 0; column < deltas.GetLength(1); column++)
                 {
-                    if (tmp[row, column] == true)
+                    if (tmp[row, column])
                     {
-                        Console.Write("X ");
+                        cell = new PdfPCell(new Phrase("X")) {HorizontalAlignment = 1};
+                        table.AddCell(cell);
                     }
                     else
                     {
-                        Console.Write(". ");
+                        cell = new PdfPCell(new Phrase(" ")) {HorizontalAlignment = 1};
+                        table.AddCell(cell);
                     }
                 }
-
-                Console.WriteLine();
             }
+
+            _reportFile.Add(table);
+            _reportFile.Add(Chunk.NEWLINE);
 
             return cycle;
         }
@@ -404,16 +481,24 @@ namespace Logistics_Transport_Issue
                 distribution[index.Even.Row, index.Even.Column] += minDistribution;
             }
 
-            Console.WriteLine("New distribution");
+            //Save to the file
+            var table = new PdfPTable(distribution.GetLength(1));
+
+            var cell = new PdfPCell(new Phrase("Distribution"))
+                { HorizontalAlignment = 1, Colspan = distribution.GetLength(1) };
+            table.AddCell(cell);
+
             for (var row = 0; row < distribution.GetLength(0); row++)
             {
                 for (var column = 0; column < distribution.GetLength(1); column++)
                 {
-                    Console.Write(distribution[row, column] + " ");
+                    cell = new PdfPCell(new Phrase(distribution[row, column].ToString())) { HorizontalAlignment = 1 };
+                    table.AddCell(cell);
                 }
-
-                Console.WriteLine();
             }
+
+            _reportFile.Add(table);
+            _reportFile.Add(Chunk.NEWLINE);
         }
 
         private static bool IsAnyValueNegative(int[,] array)
